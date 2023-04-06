@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtlsFramework2", "MtlsFramework2\MtlsFramework2.csproj", "{CE7657E2-3A02-4B81-A885-551EB1A0D207}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE7657E2-3A02-4B81-A885-551EB1A0D207}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE7657E2-3A02-4B81-A885-551EB1A0D207}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE7657E2-3A02-4B81-A885-551EB1A0D207}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE7657E2-3A02-4B81-A885-551EB1A0D207}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {77AE399F-F2D8-4491-8E52-99D930F1339B}
+	EndGlobalSection
+EndGlobal
