@@ -37,10 +37,6 @@ namespace MtlsFramework2.Middleware2
 
             try
             {
-                //Valida certificado
-
-                //var certHeader = context.Headers.["MS-ASPNETCORE-CLIENTCERT"];
-
                 IEnumerable<string> headerValues = context.Headers.GetValues("MS-ASPNETCORE-CLIENTCERT");
                 var certHeader = headerValues.FirstOrDefault();
 
@@ -52,10 +48,8 @@ namespace MtlsFramework2.Middleware2
 
                 var _PublicKey = ConfigurationManager.AppSettings["PublicKey"].ToString();
 
-
-
                 //PEGANDO DADOS DA REQUEST
-                IEnumerable<string> accessIdValues = context.Headers.GetValues("Access");
+                IEnumerable<string> accessIdValues = context.Headers.GetValues("Access-Id");
                 var accessId = accessIdValues.FirstOrDefault();
 
 
@@ -78,7 +72,6 @@ namespace MtlsFramework2.Middleware2
 
                 if (publicKey_cert == _PublicKey)
                 {
-
                     if (publicKey_cert != _PublicKey)
                     {
                         return context.CreateResponse(HttpStatusCode.Forbidden, "Forbiden");

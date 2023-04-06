@@ -1,0 +1,153 @@
+{
+	"info": {
+		"_postman_id": "9f3a8819-510e-4632-9d2b-01c483b8bb8a",
+		"name": "MTLS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13191083"
+	},
+	"item": [
+		{
+			"name": "Teste MTLS",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let prepareRequest = () => {\r",
+							"    const requirements = \"starkbank-ecdsa,big-integer\";\r",
+							"    const packages = pm.collectionVariables.get(\"packages\");\r",
+							"    if (packages) {\r",
+							"        eval(packages);\r",
+							"        getRandomNumberAndSetHeaders();\r",
+							"        return;\r",
+							"    } \r",
+							"    pm.sendRequest({\r",
+							"        url: `https://southamerica-east1-api-ms-auth-dev.cloudfunctions.net/ecdsa-postman?packages=${requirements}`,\r",
+							"        method: 'GET'\r",
+							"    }, (err, res) => {\r",
+							"        if (err) {\r",
+							"            console.log(err);\r",
+							"            return;\r",
+							"        }\r",
+							"        eval(res.text());\r",
+							"        pm.collectionVariables.set('packages', res.text());\r",
+							"        getRandomNumberAndSetHeaders();\r",
+							"        return;\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"let getRandomNumberAndSetHeaders = () => {\r",
+							"    let payload = {\r",
+							"            \"Gx\": \"55066263022277343669578718895168534326250603453777594175500187360389116729240\",\r",
+							"            \"Gy\": \"32670510020758816978083085130507043184471273380659243275938904335757337482424\",\r",
+							"            \"A\": \"0\",\r",
+							"            \"P\": \"115792089237316195423570985008687907853269984665640564039457584007908834671663\",\r",
+							"            \"N\": \"115792089237316195423570985008687907852837564279074904382605163141518161494337\"\r",
+							"    }\r",
+							"\r",
+							"    let responseJson;\r",
+							"    pm.sendRequest({\r",
+							"        url: \"https://us-central1-api-ms-auth-sbx.cloudfunctions.net/ellipticCurveMath\",\r",
+							"        method: 'POST',\r",
+							"        header: {\r",
+							"            'content-type': 'application/json' \r",
+							"        },\r",
+							"        body: {\r",
+							"            mode: 'raw',\r",
+							"            raw: JSON.stringify(payload)\r",
+							"        }\r",
+							"\r",
+							"    }, (err, res) => {\r",
+							"        if (err) {\r",
+							"            console.log(err);\r",
+							"            return;\r",
+							"        }\r",
+							"        responseJson = res.json();\r",
+							"        let status = res['code'];\r",
+							"        if (status == 400 || status == 404)\r",
+							"            throw new error.InputErrors(content, status);\r",
+							"        if (status == 500)                \r",
+							"            throw new error.InternalServerError(content, status);\r",
+							"        setHeaders(responseJson['randNum']);\r",
+							"    });        \r",
+							"};\r",
+							"\r",
+							"let setHeaders = (randNum) => {\r",
+							"    const ellipticcurve = require('starkbank-ecdsa');\r",
+							"    const BigInt = require('big-integer');\r",
+							"    const Header = require('postman-collection').Header\r",
+							"    const Ecdsa = ellipticcurve.Ecdsa;\r",
+							"    const PrivateKey = ellipticcurve.PrivateKey;\r",
+							"\r",
+							"    let privateKeyPem='-----BEGIN EC PRIVATE KEY-----\\nMHICAQEEIAcrZ0+kP2XLOL3wceKogEtOPLtuTzQQHJDyi6Ztwr4CoAcGBSuBBAAK\\noUIABJoqw0BRi6vUngyJ3oYFV1bJ6ewp814wGrfyGQEmS+SDM7WHAwlqegJHin6E\\npjrhpsNIMkV4bisOL0Y7TcQ9FXQ=\\n-----END EC PRIVATE KEY-----';\r",
+							"\r",
+							"    if (!privateKeyPem) \r",
+							"        throw 'You forgot to set your privateKey as an environment variable.'\r",
+							"\r",
+							"    try {\r",
+							"        privateKey = PrivateKey.fromPem(privateKeyPem);\r",
+							"    } catch(err) {\r",
+							"        throw 'Private Key is invalid.'\r",
+							"    }\r",
+							"\r",
+							"    let projectId = 5241518013022208;\r",
+							"\r",
+							"    if (!projectId) \r",
+							"        throw 'You forgot to set your projectId as an environment variable.'\r",
+							"\r",
+							"    let bodyString = pm.request.body.raw == null ? \"\" : pm.request.body.raw;\r",
+							"    let accessId = \"project/\" + projectId;\r",
+							"    let accessTime = Math.floor(Date.now()/1000);    \r",
+							"    let message = accessId + \":\" + accessTime;\r",
+							"    //let message = accessId + \":\" + accessTime + \":\" + bodyString;\r",
+							"    let signature = Ecdsa.sign(message, privateKey, null, BigInt(randNum));\r",
+							"\r",
+							"    pm.request.headers.add(new Header(\"Access-Id: \" + accessId));\r",
+							"    pm.request.headers.add(new Header(\"Access-Time: \" + accessTime));\r",
+							"    pm.request.headers.add(new Header(\"Access-Signature: \" + signature.toBase64()));\r",
+							"    \r",
+							"};\r",
+							"\r",
+							"prepareRequest();\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "MS-ASPNETCORE-CLIENTCERT",
+						"value": "MIIFozCCA4sCFAx1oFvB8UYcd5ENLv6n/ZQtSQGvMA0GCSqGSIb3DQEBCwUAMIGNMQswCQYDVQQGEwJCQTELMAkGA1UECAwCQkExETAPBgNVBAcMCHNhbHZhZG9yMREwDwYDVQQKDAhqZWZlcnNvbjERMA8GA1UECwwIamVmZXJzb24xETAPBgNVBAMMCGplZmVyc29uMSUwIwYJKoZIhvcNAQkBFhZqZWZlcnNvbmZzQGhvdG1haWwuY29tMB4XDTIzMDQwNTIzMjY1OFoXDTI0MDQwNDIzMjY1OFowgY0xCzAJBgNVBAYTAkJBMQswCQYDVQQIDAJCQTERMA8GA1UEBwwIc2FsdmFkb3IxETAPBgNVBAoMCGplZmVyc29uMREwDwYDVQQLDAhqZWZlcnNvbjERMA8GA1UEAwwIamVmZXJzb24xJTAjBgkqhkiG9w0BCQEWFmplZmVyc29uZnNAaG90bWFpbC5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC4VyRo9nyL3J9EAfvoc0gcgZWLvNcYPwwCt8wDtSkf7BTyITi2TBqEhsBCLlo6cWLGfvZ2r5iWdc18n3T28+zpLj6nD7RNs416+Srbw75THvUeFUtBthhgIBeDzxmMxcBIH1xdnVquEppJZL1LBUciwhmRVozyxrM83bmKH34/Mvera6UvVbOQqDijCCNYi/4WxY6PWFT3OA5XISJpWMjVcg+t9iaDsw8zlitntBujGGUU9aeN6sdOtRbJgOAbY3CD/vGE5i2Lvj2s5NU7eff1MdByDSVGR8koQ/nEeuZ5Xc/hfSc1Mi8sln3ibvPavjVJkeDSlSsXEwWAx+wQ0bjUTd8mbQhcANihhVYyUcjwsboVt9eEu6EZaYXp0lXu/5HW4VTgohdmvKo164iO25x2tqCpMwSR8oULG6nqi8gDgBUUjjpXWhr3kW84XHHXFGaqHvLW/oxHPpM1V0I3GtjAUWVfik0iYJ7t6tUBT6d7NHPk5SVO4PLtiocprIW45MPU0aQDTx3uVwkjHnc3Gpz6OLFGAeVMHUyjTfV1yKHpLhQEd/8k/FYxuu5nfvUDBs/dFewLMQBwO7RJm4BFEK7syVl978rZR/GpaxeiosNahK1fBmPI88xyQLa81n/2607F+ZFJ9exqEiVlSg/y1MyoexJLfAQOMucp76sTbYjZ8wIDAQABMA0GCSqGSIb3DQEBCwUAA4ICAQBE2gHgNFd9QJUeRnxAy+8BFtudI+5M0gx4v1skHBqyrlRYu5dLrHMuF+zeFZIKprFq9X+QoGw4n+MPpJvAlydV5c6pi91fsjyW7+p++aJViMdF0W9cOOy/+IzPrOpEMIb40i1OX3d4GbIV4EXzlaKcZsnrBNjtsNwgJIKkqWmqX6ypTQWTFGJkLtUhO090SgfynVkWA1l839jU9hOmqSxejBb8JCwkDDroPjfVaIuoHAXUD/Fm017qRJhI8Tvp9PKj8JZqw2bpa14SvcEAjRT7IRVSnXpc5c+QtzfQQnlJsuaEeBQQrm8+sGPwmGD64rtzGwm96+MTUNjIPpmjV0gTSmaPQmn0RUI4l13jxgk5JhS3kVooL6+2ZCuhv+bZCF/Z0U7FeeaNQhm/cq7qCdoCe2z4/sfB05YBcpy9JGAfDuGbL1uWVrt4BOfLSrmv+jjqW/yZiJ6wr9CMedcbjmeCkqRdv8WqSS5eD7tgutzUX9oH94eKx/UdWwaGFIPWmpGNr71CoKULa1ymugy78AFRGvZwOWCvrqgLqJoXzZWCfltX9EwgR/5aev1wYBi4PI4ws6C3AcPu2nQnscINFoGwwfihYVV5NmTJhcEpdTbAN5F7/ArZhaVbanR7sBTf4oVtRuDWoHQApedwsxzKFDoq1B5cxI7EJnOwb1tGgK91aQ==",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://localhost:5000",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000"
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "packages",
+			"value": ""
+		}
+	]
+}
